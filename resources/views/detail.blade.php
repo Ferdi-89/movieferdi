@@ -7,7 +7,7 @@
 <div class="card mb-3">
     <div class="row g-0">
       <div class="col-md-3">
-        <img src="/images/{{ $movie['foto_sampul'] }}" class="img-fluid rounded-start" alt="...">
+        <img src="{{ asset('images/' . $movie['foto_sampul']) }}" class="img-fluid rounded-start" alt="{{ $movie['judul'] }}" onerror="this.src='https://placehold.co/300x400?text=No+Image'">
       </div>
       <div class="col-md-9">
         <div class="card-body">

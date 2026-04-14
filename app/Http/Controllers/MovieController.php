@@ -57,8 +57,7 @@ class MovieController extends Controller
         }
 
         $randomName = Str::uuid()->toString();
-        // $fileExtension = $request->file('foto_sampul')->getClientOriginalExtension();
-        $fileExtension = 'jpg';
+        $fileExtension = $request->file('foto_sampul')->getClientOriginalExtension();
         $fileName = $randomName . '.' . $fileExtension;
 
         // Simpan file foto ke folder public/images
