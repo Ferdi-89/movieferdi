@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use App\Models\Movie;
-use App\Models\Category;
+use App\Interfaces\MovieRepositoryInterface;
+use App\Interfaces\CategoryRepositoryInterface;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Validator;
@@ -11,24 +11,28 @@ use Illuminate\Validation\Rule;
 
 class MovieService
 {
+    protected $movieRepository;
+    protected $categoryRepository;
+
+    public function __construct(MovieRepositoryInterface $movieRepository, CategoryRepositoryInterface $categoryRepository)
+    {
+        $this->movieRepository = $movieRepository;
+        $this->categoryRepository = $categoryRepository;
+    }
+
     public function getAllMovies($search = null, $perPage = 6)
     {
-        $query = Movie::latest();
-        if ($search) {
-            $query->where('judul', 'like', '%' . $search . '%')
-                ->orWhere('sinopsis', 'like', '%' . $search . '%');
-        }
-        return $query->paginate($perPage)->withQueryString();
+        return $this->movieRepository->getAllMovies($search, $perPage);
     }
 
     public function getMovieById($id)
     {
-        return Movie::findOrFail($id);
+        return $this->movieRepository->getMovieById($id);
     }
 
     public function getAllCategories()
     {
-        return Category::all();
+        return $this->categoryRepository->getAllCategories();
     }
 
     public function storeMovie(array $data, $file)
@@ -50,8 +54,7 @@ class MovieService
         // Simpan file foto ke folder public/images
         $file->move(public_path('images'), $fileName);
 
-        // Simpan data ke table movies
-        return Movie::create([
+        $movieData = [
             'id' => $data['id'],
             'judul' => $data['judul'],
             'category_id' => $data['category_id'],
@@ -59,7 +62,10 @@ class MovieService
             'tahun' => $data['tahun'],
             'pemain' => $data['pemain'],
             'foto_sampul' => $fileName,
-        ]);
+        ];
+
+        // Simpan data ke table movies
+        return $this->movieRepository->createMovie($movieData);
     }
 
     public function updateMovie($id, array $data, $file = null)
@@ -73,7 +79,7 @@ class MovieService
             'foto_sampul' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ])->validate();
 
-        $movie = Movie::findOrFail($id);
+        $movie = $this->movieRepository->getMovieById($id);
 
         $updateData = collect($data)->except('foto_sampul')->toArray();
 
@@ -91,19 +97,18 @@ class MovieService
             $updateData['foto_sampul'] = $fileName;
         }
 
-        $movie->update($updateData);
-        return $movie;
+        return $this->movieRepository->updateMovie($id, $updateData);
     }
 
     public function deleteMovie($id)
     {
-        $movie = Movie::findOrFail($id);
+        $movie = $this->movieRepository->getMovieById($id);
 
         // Delete the movie's photo if it exists
         $this->deleteFile($movie->foto_sampul);
 
         // Delete the movie record from the database
-        return $movie->delete();
+        return $this->movieRepository->deleteMovie($id);
     }
 
     private function deleteFile($fileName)

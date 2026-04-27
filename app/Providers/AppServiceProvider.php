@@ -12,7 +12,15 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(
+            \App\Interfaces\MovieRepositoryInterface::class,
+            \App\Repositories\MovieRepository::class
+        );
+
+        $this->app->bind(
+            \App\Interfaces\CategoryRepositoryInterface::class,
+            \App\Repositories\CategoryRepository::class
+        );
     }
 
     /**
