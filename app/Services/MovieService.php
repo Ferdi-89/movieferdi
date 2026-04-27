@@ -47,12 +47,7 @@ class MovieService
             'foto_sampul' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ])->validate();
 
-        $randomName = Str::uuid()->toString();
-        $fileExtension = $file->getClientOriginalExtension();
-        $fileName = $randomName . '.' . $fileExtension;
-
-        // Simpan file foto ke folder public/images
-        $file->move(public_path('images'), $fileName);
+        $fileName = $this->uploadImage($file);
 
         $movieData = [
             'id' => $data['id'],
@@ -84,12 +79,7 @@ class MovieService
         $updateData = collect($data)->except('foto_sampul')->toArray();
 
         if ($file) {
-            $randomName = Str::uuid()->toString();
-            $fileExtension = $file->getClientOriginalExtension();
-            $fileName = $randomName . '.' . $fileExtension;
-
-            // Simpan file foto ke folder public/images
-            $file->move(public_path('images'), $fileName);
+            $fileName = $this->uploadImage($file);
 
             // Hapus foto lama jika ada
             $this->deleteFile($movie->foto_sampul);
@@ -116,5 +106,12 @@ class MovieService
         if ($fileName && File::exists(public_path('images/' . $fileName))) {
             File::delete(public_path('images/' . $fileName));
         }
+    }
+
+    private function uploadImage($file)
+    {
+        $fileName = Str::uuid()->toString() . '.' . $file->getClientOriginalExtension();
+        $file->move(public_path('images'), $fileName);
+        return $fileName;
     }
 }

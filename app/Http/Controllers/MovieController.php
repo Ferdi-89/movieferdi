@@ -45,7 +45,7 @@ class MovieController extends Controller
         return view('data-movies', compact('movies'));
     }
 
-    public function form_edit($id)
+    public function edit($id)
     {
         $movie = $this->movieService->getMovieById($id);
         $categories = $this->movieService->getAllCategories();
